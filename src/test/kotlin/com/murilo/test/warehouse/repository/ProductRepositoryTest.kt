@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest
+import org.springframework.data.domain.PageRequest.of
 
 @DataMongoTest
 internal class ProductRepositoryTest {
@@ -49,6 +50,32 @@ internal class ProductRepositoryTest {
         val productAfterDelete = productRepository.findById(productFound.productNumber).block()
 
         productAfterDelete shouldBe null
+    }
+
+    @Test
+    fun `should find all pageable products when there is only one product`() {
+        val allProducts = productRepository.findByProductNumberNotNull(of(0, 10)).collectList().block()
+
+        allProducts?.size shouldBe 1
+    }
+
+    @Test
+    fun `should find all pageable products when there are 5 products`() {
+        productRepository.saveAll(listOf(
+            getProduct(2),
+            getProduct(3),
+            getProduct(4),
+            getProduct(5),
+        )).collectList().block()
+
+        val firstPageOfThree = productRepository.findByProductNumberNotNull(of(0, 2)).collectList().block()
+        firstPageOfThree?.size shouldBe 2
+
+        val secondPageOfThree = productRepository.findByProductNumberNotNull(of(1, 2)).collectList().block()
+        secondPageOfThree?.size shouldBe 2
+
+        val lastPagePageOfThree = productRepository.findByProductNumberNotNull(of(2, 2)).collectList().block()
+        lastPagePageOfThree?.size shouldBe 1
     }
 
     @AfterEach

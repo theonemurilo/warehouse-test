@@ -16,13 +16,14 @@ class ArticleCustomRepository(
     private val mongoTemplate: ReactiveMongoTemplate,
 ) {
 
-    fun subtractArticlesFromStockByProduct(product: Product) = product.productArticles.takeIf { it.isNotEmpty() }
-        ?.let {
-            mongoTemplate.getCollection("articles")
-                .flatMap { collection ->
-                    collection.bulkWrite(getUpdatesByArticle(product.productArticles)).toMono()
-                }
-        } ?: Mono.empty()
+    fun subtractArticlesFromStockByProduct(product: Product) =
+        product.productArticles.takeIf { it.isNotEmpty() }
+            ?.let {
+                mongoTemplate.getCollection("articles")
+                    .flatMap { collection ->
+                        collection.bulkWrite(getUpdatesByArticle(product.productArticles)).toMono()
+                    }
+            } ?: Mono.empty()
 
     private fun getUpdatesByArticle(productArticles: List<ProductArticle>): List<UpdateOneModel<Document>> =
         productArticles.map {
