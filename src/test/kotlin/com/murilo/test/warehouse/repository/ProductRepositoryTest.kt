@@ -18,36 +18,37 @@ internal class ProductRepositoryTest {
 
     @Autowired
     private lateinit var productRepository: ProductRepository
+    private lateinit var product: Product
 
     @BeforeEach
     fun setup() {
-        productRepository.save(getProduct()).block()
+        product = productRepository.save(getProduct()).block()!!
     }
 
     @Test
     fun `given a saved product and its articles then it should be possible to find it`() {
-        val productFound = productRepository.findById(getProduct().productNumber).block()
+        val productFound = productRepository.findById(product.productNumber!!).block()
 
-        assertProduct(productFound, getProduct())
+        assertProduct(productFound, product)
     }
 
     @Test
     fun `given a saved product and its articles then it should be possible to update it`() {
-        val productFound = productRepository.findById(getProduct().productNumber).block()
+        val productFound = productRepository.findById(product.productNumber!!).block()
         val newProduct = productFound!!.copy(name = "dummy product 2")
 
         val productUpdated = productRepository.save(newProduct).block()
 
-        assertProduct(productUpdated, getProduct().copy(name = "dummy product 2"))
+        assertProduct(productUpdated, product.copy(name = "dummy product 2"))
     }
 
     @Test
     fun `given a saved product and its articles then it should be possible to delete it`() {
-        val productFound = productRepository.findById(getProduct().productNumber).block()
+        val productFound = productRepository.findById(product.productNumber!!).block()
 
-        productRepository.deleteById(productFound!!.productNumber).block()
+        productRepository.deleteById(productFound!!.productNumber!!).block()
 
-        val productAfterDelete = productRepository.findById(productFound.productNumber).block()
+        val productAfterDelete = productRepository.findById(productFound.productNumber!!).block()
 
         productAfterDelete shouldBe null
     }
@@ -62,10 +63,10 @@ internal class ProductRepositoryTest {
     @Test
     fun `should find all pageable products when there are 5 products`() {
         productRepository.saveAll(listOf(
-            getProduct(2),
-            getProduct(3),
-            getProduct(4),
-            getProduct(5),
+            getProduct(),
+            getProduct(),
+            getProduct(),
+            getProduct(),
         )).collectList().block()
 
         val firstPageOfThree = productRepository.findByProductNumberNotNull(of(0, 2)).collectList().block()

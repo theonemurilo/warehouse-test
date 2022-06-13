@@ -16,15 +16,15 @@ internal class ArticleRepositoryTest {
 
     @Autowired
     private lateinit var articleRepository: ArticleRepository
+    private lateinit var article: Article
 
     @BeforeEach
     fun setup() {
-        articleRepository.save(getArticle()).block()
+        article = articleRepository.save(getArticle()).block()!!
     }
 
     @Test
     fun `given a saved article then it should be possible to find it`() {
-        val article = getArticle()
         val foundArticle = articleRepository.findById(article.articleId).block()
 
         assertArticle(foundArticle, article)
@@ -32,7 +32,7 @@ internal class ArticleRepositoryTest {
 
     @Test
     fun `given a saved article then it should be possible to update it`() {
-        val newArticle = getArticle().copy(name = "new dummy article")
+        val newArticle = article.copy(name = "new dummy article")
 
         articleRepository.save(newArticle).block()
         val updatedArticle = articleRepository.findById(newArticle.articleId).block()
@@ -42,8 +42,6 @@ internal class ArticleRepositoryTest {
 
     @Test
     fun `given a saved article then it should be possible to delete it`() {
-        val article = getArticle()
-
         articleRepository.deleteById(article.articleId).block()
         val deletedArticle = articleRepository.findById(article.articleId).block()
 

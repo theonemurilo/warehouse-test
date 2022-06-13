@@ -17,7 +17,11 @@ data class Article(
     val version: Long? = null,
 ) {
 
-    fun articleHaveMinStock() = stock > minStock
+    companion object {
+        fun emptyArticle() = Article(articleId = -1, name = "", stock = 0, minStock = 0)
+    }
+
+    fun articleHasMinStock() = stock > minStock
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

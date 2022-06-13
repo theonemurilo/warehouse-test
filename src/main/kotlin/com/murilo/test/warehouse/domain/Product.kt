@@ -11,7 +11,7 @@ import java.math.BigDecimal
 data class Product(
     @Indexed
     @Id
-    val productNumber: Long,
+    val productNumber: String? = null,
     val name: String,
     val price: BigDecimal,
     val productArticles: List<ProductArticle>,
@@ -22,8 +22,8 @@ data class Product(
     @Transient
     private val productArticlesMap = productArticles.associateBy { it.articleId }
 
-    fun articleHaveStock(article: Article) = productArticlesMap[article.articleId]
-        ?.let { article.articleHaveMinStock() && article.stock >= it.amountOf }
+    fun articleHasStock(article: Article) = productArticlesMap[article.articleId]
+        ?.let { article.articleHasMinStock() && article.stock >= it.amountOf }
         ?: false
 
     override fun equals(other: Any?): Boolean {

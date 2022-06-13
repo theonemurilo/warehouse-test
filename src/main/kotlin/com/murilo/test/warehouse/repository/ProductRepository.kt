@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 
 @Repository
-interface ProductRepository : ReactiveCrudRepository<Product, Long> {
+interface ProductRepository : ReactiveCrudRepository<Product, String> {
     fun findByProductNumberNotNull(pageable: Pageable): Flux<Product>
 }
