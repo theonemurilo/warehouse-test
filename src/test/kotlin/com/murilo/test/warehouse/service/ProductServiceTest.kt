@@ -3,6 +3,7 @@ package com.murilo.test.warehouse.service
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.murilo.test.warehouse.composer.ProductComposer
 import com.murilo.test.warehouse.domain.Product
+import com.murilo.test.warehouse.exceptions.BadRequestException
 import com.murilo.test.warehouse.exceptions.NotFoundException
 import com.murilo.test.warehouse.exceptions.UnprocessableEntityException
 import com.murilo.test.warehouse.fixture.getJsonPayload
@@ -21,6 +22,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.http.codec.multipart.FilePart
 import reactor.core.publisher.Flux.just
 import reactor.core.publisher.Mono
+import reactor.test.StepVerifier
 import reactor.test.StepVerifier.create
 import java.math.BigDecimal
 
@@ -117,5 +119,20 @@ internal class ProductServiceTest {
                 productArticle.amountOf shouldBe product.productArticles.first().amountOf
             }
         }
+    }
+
+    @Test
+    fun `should not save the product input file because of parsing error`() {
+        val filePartFlux = just(mockk<FilePart>(relaxed = true))
+        val payload = "invalid json payload"
+        mockkStatic("com.murilo.test.warehouse.utils.FileReaderKt")
+        every { readFile(filePartFlux) } returns Mono.just(payload)
+        every { productRepository.saveAll(any<Iterable<Product>>()) } returns just(getProduct())
+
+        create(productService.saveFile(filePartFlux))
+            .expectError(BadRequestException::class.java)
+            .verify()
+
+        verify { productRepository wasNot Called }
     }
 }

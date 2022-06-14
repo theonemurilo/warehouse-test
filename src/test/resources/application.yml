@@ -1,5 +1,3 @@
-logging.level.org.mongodb.driver.protocol.command: DEBUG
-
 spring:
   mongodb:
     embedded:

@@ -3,7 +3,7 @@ package com.murilo.test.warehouse.service
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.mongodb.bulk.BulkWriteResult
 import com.murilo.test.warehouse.domain.Article
-import com.murilo.test.warehouse.domain.Product
+import com.murilo.test.warehouse.exceptions.BadRequestException
 import com.murilo.test.warehouse.fixture.getArticle
 import com.murilo.test.warehouse.fixture.getInventoryJsonPayload
 import com.murilo.test.warehouse.fixture.getProduct
@@ -14,12 +14,12 @@ import io.kotest.assertions.asClue
 import io.kotest.assertions.forEachAsClue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.kotest.matchers.types.shouldBeSameInstanceAs
 import io.mockk.*
 import org.junit.jupiter.api.Test
 import org.springframework.http.codec.multipart.FilePart
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.test.StepVerifier.create
 
 internal class ArticleServiceTest {
 
@@ -65,5 +65,19 @@ internal class ArticleServiceTest {
             it.stock shouldBe article.stock
             it.minStock shouldBe article.minStock
         }
+    }
+
+    @Test
+    fun `should not save the inventory input file because of parsing error`() {
+        val filePartFlux = Flux.just(mockk<FilePart>(relaxed = true))
+        val payload = "invalid json payload"
+        mockkStatic("com.murilo.test.warehouse.utils.FileReaderKt")
+        every { readFile(filePartFlux) } returns Mono.just(payload)
+
+        create(articleService.saveFile(filePartFlux))
+            .expectError(BadRequestException::class.java)
+            .verify()
+
+        verify { articleRepository wasNot Called }
     }
 }

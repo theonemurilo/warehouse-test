@@ -13,12 +13,14 @@ class ProductController(
     private val productService: ProductService,
 ) {
 
-    @PostMapping("/productNumber")
+    @PutMapping("/{productNumber}", params = ["sell"])
     fun sell(@PathVariable("productNumber") productNumber: String): Mono<Void> = productService.sell(productNumber)
 
     @GetMapping
-    fun getAll(@RequestParam(defaultValue = "0") page: Int, @RequestParam(defaultValue = "3") size: Int) =
-        productService.getAll(page, size)
+    fun getAll(
+        @RequestParam(name = "page", defaultValue = "0") page: Int,
+        @RequestParam(name = "size", defaultValue = "3") size: Int,
+    ) = productService.getAll(page, size)
 
     @PostMapping(params = ["uploadFile"])
     @ResponseStatus(HttpStatus.CREATED)
